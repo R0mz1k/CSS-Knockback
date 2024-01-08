@@ -29,9 +29,6 @@ public class KnockbackSystem : BasePlugin
         CEntityInstance victim = handle.GetParam<CEntityInstance>(0);
         CCSPlayerController? Victim = victim.player();
 
-        if (!Victim.IsValid())
-            return HookResult.Continue;
-
         CCSPlayerPawn? PlayerPawn = Victim.PlayerPawn();
 
         if (PlayerPawn == null)
@@ -45,9 +42,6 @@ public class KnockbackSystem : BasePlugin
     private HookResult PlayerHurtPre(EventPlayerHurt @event, GameEventInfo info)
     {
         CCSPlayerController? Victim = @event.Userid;
-
-        if (!Victim.IsValid())
-            return HookResult.Continue;
 
         CCSPlayerPawn? PlayerPawn = Victim.PlayerPawn();
 
@@ -96,14 +90,9 @@ public static class GeneralPurpose
         return player_pawn.OriginalController.Value;
     }
 
-    public static bool IsValid(this CCSPlayerController? PlayerController)
-    {
-        return PlayerController != null && PlayerController.IsValid && PlayerController.PlayerPawn.IsValid;
-    }
-
     public static CCSPlayerPawn? PlayerPawn(this CCSPlayerController? PlayerController)
     {
-        if (PlayerController == null || !PlayerController.IsValid())
+        if (PlayerController == null || !PlayerController.IsValid || !PlayerController.PlayerPawn.IsValid)
         {
             return null;
         }
