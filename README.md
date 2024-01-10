@@ -1,2 +1,10 @@
-# Knockback-System
-This plugin removes the change in player's speed when taking damage. The plugin will be finalized and a full-fledged rollback system will be added.
+# Knockback
+This plugin, when hit, repels the recipient of the damage.
+
+# What's planned next?
+It is planned to calculate the repulsion based on the following parameters:
+
+- Base weapon recoil strength;
+- Range of the shot;
+- Amount of damage;
+
