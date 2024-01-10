@@ -8,3 +8,6 @@ It is planned to calculate the repulsion based on the following parameters:
 - Range of the shot;
 - Amount of damage;
 
+# Demonstration
+https://www.youtube.com/watch?v=betsYJ5tQzg&ab_channel=Ромзик
+
