@@ -1,4 +1,4 @@
-﻿using CounterStrikeSharp.API;
+using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Memory;
 using CounterStrikeSharp.API.Modules.Memory.DynamicFunctions;
@@ -12,49 +12,74 @@ public class Knockback : BasePlugin
     public override string ModuleVersion => "0.0.1";
     public override string ModuleAuthor => "belom0r";
 
-    public static Dictionary<CCSPlayerController, float> VelocityModifier = new Dictionary<CCSPlayerController, float>();
-    public static Dictionary<CCSPlayerController, Vector> DamageDirection = new Dictionary<CCSPlayerController, Vector>();
-
-    public static Dictionary<string, float> KBWeaponPower = new Dictionary<string, float>()
+    public class WeaponData
     {
-        {"weapon_glock", 1.0f},
-        {"weapon_usp_silencer", 1.0f},
-        {"weapon_hkp2000", 1.0f},
-        {"weapon_elite", 1.0f},
-        {"weapon_p250", 1.0f},
-        {"weapon_fiveseven", 1.0f},
-        {"weapon_cz75a", 1.0f},
-        {"weapon_deagle", 1.0f},
-        {"weapon_revolver", 1.0f},
-        {"weapon_nova", 1.0f},
-        {"weapon_xm1014", 1.0f},
-        {"weapon_sawedoff", 1.0f},
-        {"weapon_mag7", 1.0f},
-        {"weapon_m249", 1.0f},
-        {"weapon_negev", 1.0f},
-        {"weapon_mac10", 1.0f},
-        {"weapon_mp7", 1.0f},
-        {"weapon_mp9", 1.0f},
-        {"weapon_mp5sd", 1.0f},
-        {"weapon_ump45", 1.0f},
-        {"weapon_p90", 1.0f},
-        {"weapon_bizon", 1.0f},
-        {"weapon_galilar", 1.0f},
-        {"weapon_famas", 1.0f},
-        {"weapon_ak47", 1.0f},
-        {"weapon_m4a4", 1.0f},
-        {"weapon_m4a1_silencer", 1.0f},
-        {"weapon_ssg08", 1.0f},
-        {"weapon_sg556", 1.0f},
-        {"weapon_aug", 1.0f},
-        {"weapon_awp", 1.0f},
-        {"weapon_g3sg1", 1.0f},
-        {"weapon_scar20", 1.0f}
+        public float Knockback { get; }
+        public float MaximumDistance { get; }
+
+        public WeaponData(float Knockback, float MaximumDistance)
+        {
+            this.Knockback = Knockback;
+            this.MaximumDistance = MaximumDistance;
+        }
+    }
+
+    public Dictionary<string, WeaponData> WeaponDataByWeapons = new Dictionary<string, WeaponData>()
+    {
+        {"weapon_glock",            new WeaponData( 1.0f, 300.0f ) },
+        {"weapon_usp_silencer",     new WeaponData( 1.0f, 300.0f ) },
+        {"weapon_hkp2000",          new WeaponData( 1.0f, 300.0f ) },
+        {"weapon_elite",            new WeaponData( 1.0f, 300.0f ) },
+        {"weapon_p250",             new WeaponData( 1.0f, 300.0f ) },
+        {"weapon_fiveseven",        new WeaponData( 1.0f, 300.0f ) },
+        {"weapon_cz75a",            new WeaponData( 1.0f, 300.0f ) },
+        {"weapon_deagle",           new WeaponData( 1.0f, 300.0f ) },
+        {"weapon_revolver",         new WeaponData( 1.0f, 300.0f ) },
+        {"weapon_nova",             new WeaponData( 1.0f, 300.0f ) },
+        {"weapon_xm1014",           new WeaponData( 6.0f, 300.0f ) },
+        {"weapon_sawedoff",         new WeaponData( 1.0f, 300.0f ) },
+        {"weapon_mag7",             new WeaponData( 1.0f, 300.0f ) },
+        {"weapon_m249",             new WeaponData( 1.0f, 300.0f ) },
+        {"weapon_negev",            new WeaponData( 1.0f, 300.0f ) },
+        {"weapon_mac10",            new WeaponData( 1.0f, 300.0f ) },
+        {"weapon_mp7",              new WeaponData( 1.0f, 300.0f ) },
+        {"weapon_mp9",              new WeaponData( 1.0f, 300.0f ) },
+        {"weapon_mp5sd",            new WeaponData( 1.0f, 300.0f ) },
+        {"weapon_ump45",            new WeaponData( 1.0f, 300.0f ) },
+        {"weapon_p90",              new WeaponData( 1.0f, 300.0f ) },
+        {"weapon_bizon",            new WeaponData( 1.0f, 200.0f ) },
+        {"weapon_galilar",          new WeaponData( 1.0f, 300.0f ) },
+        {"weapon_famas",            new WeaponData( 1.0f, 300.0f ) },
+        {"weapon_ak47",             new WeaponData( 1.0f, 500.0f ) },
+        {"weapon_m4a4",             new WeaponData( 1.0f, 300.0f ) },
+        {"weapon_m4a1_silencer",    new WeaponData( 1.0f, 300.0f ) },
+        {"weapon_ssg08",            new WeaponData( 1.0f, 300.0f ) },
+        {"weapon_sg556",            new WeaponData( 1.0f, 300.0f ) },
+        {"weapon_aug",              new WeaponData( 1.0f, 500.0f ) },
+        {"weapon_awp",              new WeaponData( 1.0f, 600.0f ) },
+        {"weapon_g3sg1",            new WeaponData( 1.0f, 300.0f ) },
+        {"weapon_scar20",           new WeaponData( 1.0f, 300.0f ) }
     };
+
+    public class VictimData
+    {
+        public float VelocityModifier { get; }
+        public float Damage { get; }
+        public Vector DamageDirection { get; }
+
+        public VictimData(float VelocityModifier, float Damage, Vector DamageDirection)
+        {
+            this.VelocityModifier = VelocityModifier;
+            this.Damage = Damage;
+            this.DamageDirection = DamageDirection;
+        }
+    }
+
+    public Dictionary<CCSPlayerController, VictimData> VictimDataByPlayer = new Dictionary<CCSPlayerController, VictimData>();
 
     public override void Load(bool hotReload)
     {
-        VirtualFunctions.CBaseEntity_TakeDamageOldFunc.Hook(OnTakeDamage, HookMode.Post);
+        VirtualFunctions.CBaseEntity_TakeDamageOldFunc.Hook(OnTakeDamage, HookMode.Pre);
 
         RegisterEventHandler<EventPlayerHurt>(PlayerHurtPost, HookMode.Post);
     }
@@ -77,12 +102,9 @@ public class Knockback : BasePlugin
         if (Victim == null || PlayerPawn == null)
             return HookResult.Continue;
 
-        VelocityModifier.Add(Victim, PlayerPawn.VelocityModifier);
+        Vector DamageDirection = damage_info.BitsDamageType == 2 ? damage_info.DamageDirection : new Vector(0f, 0f, 0f);
 
-        if (damage_info.BitsDamageType == 2)
-        {
-            DamageDirection.Add(Victim, damage_info.DamageDirection);
-        }
+        VictimDataByPlayer.Add(Victim, new VictimData(PlayerPawn.VelocityModifier, damage_info.Damage, DamageDirection));
 
         return HookResult.Continue;
     }
@@ -90,52 +112,52 @@ public class Knockback : BasePlugin
     private HookResult PlayerHurtPost(EventPlayerHurt @event, GameEventInfo info)
     {
         CCSPlayerController? Victim = @event.Userid;
-        CCSPlayerPawn? VictimPawn = Victim.PlayerPawn();
-
-        if (VictimPawn == null)
-            return HookResult.Continue;
-
-        if (VelocityModifier.ContainsKey(Victim))
-        {
-            VictimPawn.VelocityModifier = VelocityModifier[Victim];
-            VelocityModifier.Remove(Victim);
-        }
-
         CCSPlayerController? Attacker = @event.Attacker;
+
+        CCSPlayerPawn? VictimPawn = Victim.PlayerPawn();
         CCSPlayerPawn? AttackerPawn = Attacker.PlayerPawn();
 
-        string Weapon = @event.Weapon;
+        string WeaponName = $"weapon_{@event.Weapon}";
 
-        if (DamageDirection.ContainsKey(Victim))
+        if (VictimPawn == null || AttackerPawn == null)
+            return HookResult.Continue;
+
+        if (!VictimDataByPlayer.ContainsKey(Victim))
+            return HookResult.Continue;
+
+        VictimData victimData = VictimDataByPlayer[Victim];
+
+        VictimPawn.VelocityModifier = victimData.VelocityModifier;
+
+        float ratio = 1.0f;
+
+        ratio *= victimData.Damage;
+
+        if (WeaponDataByWeapons.ContainsKey(WeaponName))
         {
-            float knockback_distance = 0f;
+            WeaponData weaponData = WeaponDataByWeapons[WeaponName];
 
-            if (AttackerPawn != null)
+            ratio *= weaponData.Knockback;
+
+            Vector VictimPosition = VictimPawn.AbsOrigin ?? new Vector(0f, 0f, 0f);
+            Vector AttackerPosition = AttackerPawn.AbsOrigin ?? new Vector(0f, 0f, 0f);
+
+            float knockback_distance = GeneralPurpose.Distance(VictimPosition, AttackerPosition);
+
+            if (knockback_distance >= 0 && weaponData.MaximumDistance >= knockback_distance)
             {
-                Vector VictimPosition = VictimPawn.AbsOrigin ?? new Vector(0f, 0f, 0f);
-                Vector AttackerPosition = AttackerPawn.AbsOrigin ?? new Vector(0f, 0f, 0f);
-
-                knockback_distance = GeneralPurpose.Distance(VictimPosition, AttackerPosition);
+                ratio = ratio * (weaponData.MaximumDistance - knockback_distance) / 10;
             }
-
-            if (knockback_distance > 350)
-                return HookResult.Continue;
-
-            Vector VictimVelocity = VictimPawn.AbsVelocity;
-            Vector vecDamageDirection = DamageDirection[Victim];
-
-            DamageDirection.Remove(Victim);
-
-            string WeaponName = $"weapon_{Weapon}";
-
-            if (KBWeaponPower.ContainsKey(WeaponName))
-                vecDamageDirection = vecDamageDirection.Multiply(250 * KBWeaponPower[WeaponName]);
-            else
-                vecDamageDirection = vecDamageDirection.Multiply(250);
-
-            vecDamageDirection.Z = VictimVelocity.Z;
-            VictimPawn.AbsVelocity.Add(vecDamageDirection);
         }
+
+        Vector vecDamageDirection = victimData.DamageDirection;
+
+        vecDamageDirection = vecDamageDirection * ratio;
+        vecDamageDirection.Z = VictimPawn.AbsVelocity.Z;
+
+        VictimPawn.AbsVelocity.Add(vecDamageDirection);
+
+        VictimDataByPlayer.Remove(Victim);
 
         return HookResult.Continue;
     }
@@ -143,15 +165,6 @@ public class Knockback : BasePlugin
 
 public static class GeneralPurpose
 {
-    public static Vector Multiply(this Vector vector, float skl)
-    {
-        var x = vector.X * skl;
-        var y = vector.Y * skl;
-        var z = vector.Z * skl;
-
-        return new Vector(x, y, z);
-    }
-
     public static CCSPlayerPawn? PlayerPawn(this CCSPlayerController? PlayerController)
     {
         if (PlayerController == null || !PlayerController.IsValid || !PlayerController.PlayerPawn.IsValid)
